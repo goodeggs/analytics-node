@@ -52,6 +52,7 @@ class Analytics {
     this.flushAt = Math.max(options.flushAt, 1) || 20
     this.flushInterval = options.flushInterval || 10000
     this.flushed = false
+    this.enabled = options.enable === false ? false : true // eslint-disable-line no-unneeded-ternary
   }
 
   /**
@@ -151,6 +152,10 @@ class Analytics {
   enqueue (type, message, callback) {
     callback = callback || noop
 
+    if (!this.enabled) {
+      return setImmediate(callback)
+    }
+
     message = Object.assign({}, message)
     message.type = type
     message.context = Object.assign({
@@ -200,6 +205,10 @@ class Analytics {
 
   flush (callback) {
     callback = callback || noop
+
+    if (!this.enabled) {
+      return setImmediate(callback)
+    }
 
     if (this.timer) {
       clearTimeout(this.timer)

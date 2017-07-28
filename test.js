@@ -194,6 +194,18 @@ test('enqueue - extend context', t => {
   t.deepEqual(actualContext, expectedContext)
 })
 
+test('enqueue - skip when client is disabled', async t => {
+  const client = createClient({ enable: false })
+  stub(client, 'flush')
+
+  const callback = spy()
+  client.enqueue('type', {}, callback)
+  await delay(5)
+
+  t.true(callback.calledOnce)
+  t.false(client.flush.called)
+})
+
 test('flush - don\'t fail when queue is empty', async t => {
   const client = createClient()
 
@@ -244,6 +256,23 @@ test('flush - respond with an error', async t => {
   ]
 
   await t.throws(client.flush(), 'Bad Request')
+})
+
+test('flush - skip when client is disabled', async t => {
+  const client = createClient({ enable: false })
+  const callback = spy()
+
+  client.queue = [
+    {
+      message: 'test',
+      callback
+    }
+  ]
+
+  const data = await client.flush()
+
+  t.is(data, undefined)
+  t.false(callback.called)
 })
 
 test('identify - enqueue a message', t => {
