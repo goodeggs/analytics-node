@@ -49,6 +49,8 @@ class Analytics {
     this.queue = []
     this.writeKey = writeKey
     this.host = removeSlash(options.host || 'https://api.segment.io')
+    this.retries = options.retries || 3
+    this.timeout = options.timeout || false
     this.flushAt = Math.max(options.flushAt, 1) || 20
     this.flushInterval = options.flushInterval || 10000
     this.flushed = false
@@ -225,7 +227,8 @@ class Analytics {
     request
       .post(`${this.host}/v1/batch`)
       .auth(this.writeKey, '')
-      .retry(3)
+      .timeout(this.timeout)
+      .retry(this.retries)
       .send(data)
       .end((err, res) => {
         err = err || error(res)
